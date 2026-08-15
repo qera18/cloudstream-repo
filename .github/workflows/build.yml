@@ -1,0 +1,71 @@
+name: Build CloudStream Plugins
+
+concurrency:
+  group: build
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Eklenti klasor adi (bosa = tumu)"
+        required: false
+        default: ""
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - "*.md"
+      - "plugins.json"
+      - "repo.json"
+      - "**/*.cs3"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build plugins
+        run: |
+          if [ -n "${{ inputs.plugin }}" ]; then
+            gradle ":${{ inputs.plugin }}:make"
+          else
+            gradle make
+          fi
+
+      - name: Collect .cs3 artifacts
+        run: |
+          for f in */build/*.cs3; do
+            [ -f "$f" ] || continue
+            dir=$(dirname "$f")
+            module=${dir%/build}
+            mkdir -p "$module"
+            cp "$f" "$module/$(basename "$f")"
+          done
+
+      - name: Commit .cs3 outputs
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add '*.cs3' || true
+          git commit -m "chore: build .cs3 artifacts" || true
+          git push
