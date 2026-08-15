@@ -1,10 +1,10 @@
 {
   "name": "Dizi",
-  "internalName": "dizi",
+  "internalName": "Dizi",
   "version": "1.0.0",
   "tvTypes": [
-    "tvseries",
-    "movie"
+    "Movie",
+    "TvSeries"
   ],
   "url": "",
   "status": 1
