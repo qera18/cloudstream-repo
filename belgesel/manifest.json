@@ -1,0 +1,10 @@
+{
+  "name": "Belgesel",
+  "internalName": "Belgesel",
+  "version": "1.0.0",
+  "tvTypes": [
+    "TvSeries"
+  ],
+  "url": "",
+  "status": 1
+}
