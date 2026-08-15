@@ -1,0 +1,11 @@
+{
+  "name": "TestSite",
+  "internalName": "TestSite",
+  "version": "1.0.0",
+  "tvTypes": [
+    "Movie",
+    "TvSeries"
+  ],
+  "url": "",
+  "status": 1
+}
