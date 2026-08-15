@@ -53,10 +53,10 @@ jobs:
       - name: Build plugins
         run: |
           chmod +x gradlew
-          if [ -n "${{ inputs.plugin }}" ]; then
-            ./gradlew ":${{ inputs.plugin }}:make"
+            if [ -n "${{ inputs.plugin }}" ]; then
+            ./gradlew ":${{ inputs.plugin }}:makePlugins" --no-daemon --parallel
           else
-            ./gradlew make
+            ./gradlew makePlugins --no-daemon --parallel
           fi
 
       - name: Collect .cs3 artifacts
