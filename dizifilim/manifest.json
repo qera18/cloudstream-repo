@@ -1,0 +1,11 @@
+{
+  "name": "Dizi Filim",
+  "internalName": "DiziFilim",
+  "version": "1.0.0",
+  "tvTypes": [
+    "Movie",
+    "TvSeries"
+  ],
+  "url": "",
+  "status": 1
+}
