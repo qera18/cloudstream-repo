@@ -1,9 +1,9 @@
 version = 1
 
 cloudstream {
-    description = "https://dizi73.life/"
+    description = "https://www.dizimom.surf/"
     authors = listOf("AutoCloud")
     status = 1
-    tvTypes = listOf("TvSeries", "Movie")
+    tvTypes = listOf("Movie", "TvSeries")
     language = "tr"
 }
