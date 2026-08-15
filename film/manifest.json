@@ -1,0 +1,11 @@
+{
+  "name": "Film",
+  "internalName": "Film",
+  "version": "1.0.0",
+  "tvTypes": [
+    "movie",
+    "tvseries"
+  ],
+  "url": "",
+  "status": 1
+}
