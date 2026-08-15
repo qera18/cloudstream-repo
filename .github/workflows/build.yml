@@ -38,18 +38,24 @@ jobs:
           java-version: '17'
           distribution: temurin
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.11.1
         uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.11.1'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Generate Gradle wrapper (gradlew + gradle-wrapper.jar)
+        run: gradle wrapper --gradle-version 8.11.1 --distribution-type bin
+
       - name: Build plugins
         run: |
+          chmod +x gradlew
           if [ -n "${{ inputs.plugin }}" ]; then
-            gradle ":${{ inputs.plugin }}:make"
+            ./gradlew ":${{ inputs.plugin }}:make"
           else
-            gradle make
+            ./gradlew make
           fi
 
       - name: Collect .cs3 artifacts
