@@ -1,15 +1,8 @@
 {
-  "name": "Anime",
-  "description": "CloudStream3 plugin repository — Anime",
-  "plugins": [
-    {
-      "name": "Anime",
-      "module": "AnimeProvider",
-      "version": "1.0.0",
-      "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/AnimeProvider.kt",
-      "sha256": "0ff4eb897a2d7df8b2eaa2fb666823c8ab23be2f12f63b7368fb07d24caf923e",
-      "size": 4466,
-      "icon": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png"
-    }
+  "name": "FormatTest Repo",
+  "description": "CloudStream3 plugin repository — FormatTest",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
   ]
 }
