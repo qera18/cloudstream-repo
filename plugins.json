@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/FormatTestProvider.kt",
+    "status": 1,
+    "version": 1,
+    "name": "FormatTest",
+    "internalName": "FormatTestProvider",
+    "authors": [
+      "CloudStream Auto Builder"
+    ],
+    "description": "Auto-generated CloudStream3 plugin for FormatTest (https://testsite.example)",
+    "fileSize": 4788,
+    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-30f0b428760f95ab939c1e969f5494764c05035402b17b79cf3ee276602d9dbb"
+  }
+]
