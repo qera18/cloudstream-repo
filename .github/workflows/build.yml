@@ -53,7 +53,7 @@ jobs:
       - name: Build plugins
         run: |
           chmod +x gradlew
-            if [ -n "${{ inputs.plugin }}" ]; then
+          if [ -n "${{ inputs.plugin }}" ]; then
             ./gradlew ":${{ inputs.plugin }}:makePlugins" --no-daemon --parallel
           else
             ./gradlew makePlugins --no-daemon --parallel
