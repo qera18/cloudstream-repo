@@ -8,110 +8,95 @@ import org.jsoup.nodes.Element
 import org.jsoup.Jsoup
 
 class AnimeProvider : MainAPI() {
-    override var mainUrl = "https://asyaminik.com"
-    override var name = "Anime"
-    override val supportedTypes = setOf(TvType.TvSeries, TvType.Movie, TvType.Anime)
-    override var lang = "tr"
-    override val hasMainPage = true
-
     companion object {
-        val supportedTypes = setOf(TvType.TvSeries, TvType.Movie, TvType.Anime)
+        val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
     }
 
+    override var mainUrl = "https://asyaminik.com"
+    override var name = "Anime"
+    override val supportedTypes = AnimeProvider.supportedTypes
+
     override val mainPage = mainPageOf(
-        "category/diziler/" to "Diziler",
-        "category/filmler/" to "Filmler",
-        "category/anime/" to "Anime",
-        "category/haberler/" to "Haberler",
-        "category/fragmanlar/" to "Fragmanlar"
+        "/" to "Son Eklenenler",
+        "/category/anime/" to "Anime",
+        "/category/diziler/" to "Diziler",
+        "/category/filmler/" to "Filmler",
+        "/category/haberler/" to "Haberler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = if (page <= 1) "$mainUrl/${request.data}" else "$mainUrl/${request.data}page/$page/"
+        val url = if (page <= 1) "$mainUrl${request.data}" else "$mainUrl${request.data}page/$page/"
         val document = app.get(url).document
-        val home = document.select("article").mapNotNull {
+        val home = document.select("article.post, .item, .post-column").mapNotNull {
             it.toSearchResult()
         }
         return newHomePageResponse(request.name, home)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst(".entry-title a")?.text() ?: return null
-        val href = this.selectFirst(".entry-title a")?.attr("href") ?: return null
-        val posterUrl = this.selectFirst("img")?.attr("src")
+        val titleElement = this.selectFirst(".entry-title a, .post-title a, h2 a") ?: return null
+        val title = titleElement.text().trim()
+        val href = titleElement.attr("abs:href")
+        val posterUrl = this.selectFirst("img")?.attr("abs:src")
         
-        return if (title.contains("Film", ignoreCase = true)) {
-            newMovieSearchResponse(title, href, TvType.Movie) {
-                this.posterUrl = posterUrl
-            }
-        } else {
-            newAnimeSearchResponse(title, href, TvType.TvSeries) {
-                this.posterUrl = posterUrl
-            }
+        return newAnimeSearchResponse(title, href, TvType.Anime) {
+            this.posterUrl = posterUrl
         }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/?s=$query").document
-        return document.select("article").mapNotNull {
+        return document.select("article.post, .item, .post-column").mapNotNull {
             it.toSearchResult()
         }
     }
 
-    override suspend fun load(url: String): LoadResponse? {
+    override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
-        val title = document.selectFirst("h1.entry-title")?.text()?.trim() ?: return null
-        val poster = document.selectFirst("meta[property='og:image']")?.attr("content") 
-            ?: document.selectFirst(".post-thumbnail img")?.attr("src")
-        val description = document.select(".entry-content p").firstOrNull()?.text()?.trim()
-
-        val episodeLinks = document.select(".entry-content a").filter { 
-            val text = it.text().lowercase()
-            text.contains("bölüm") || text.contains("izle") || it.attr("href").contains("bolum")
-        }
-
-        return if (episodeLinks.isEmpty()) {
+        val title = document.selectFirst("h1.entry-title, .post-title")?.text()?.trim() ?: ""
+        val poster = document.selectFirst("meta[property='og:image']")?.attr("content")
+        val plot = document.selectFirst(".entry-content p, .post-content p")?.text()
+        
+        val isMovie = url.contains("/filmler/") || url.contains("-filmi/") || document.select(".category-filmler").isNotEmpty()
+        
+        return if (isMovie) {
             newMovieLoadResponse(title, url, TvType.Movie, url) {
                 this.posterUrl = poster
-                this.plot = description
+                this.plot = plot
             }
         } else {
-            val episodes = episodeLinks.map {
-                Episode(
-                    data = it.attr("href"),
-                    name = it.text().trim()
-                )
-            }.distinctBy { it.data }
-            
-            newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+            // WordPress posts are often individual episodes, but we treat them as a series entry point
+            newTvSeriesLoadResponse(title, url, TvType.TvSeries, listOf(Episode(url, "İzle"))) {
                 this.posterUrl = poster
-                this.plot = description
+                this.plot = plot
             }
         }
     }
 
     override suspend fun loadLinks(
         data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
+        isDataJob: Boolean,
+        callback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).document
         
-        // Handle direct iframes
-        document.select("iframe").forEach { iframe ->
-            val src = iframe.attr("src").let { 
-                if (it.startsWith("//")) "https:$it" else it 
+        // Look for common WordPress embed patterns
+        val frames = document.select("iframe[src*='embed'], iframe[src*='player'], iframe[src*='video'], .video-container iframe")
+        
+        frames.forEach { iframe ->
+            var src = iframe.attr("src")
+            if (src.startsWith("//")) src = "https:$src"
+            
+            if (src.isNotEmpty() && !src.contains("facebook.com") && !src.contains("twitter.com")) {
+                loadExtractor(src, data, callback, callback)
             }
-            loadExtractor(src, data, subtitleCallback, callback)
         }
 
-        // Handle links that might lead to extractors (OK.ru, Fembed, etc)
-        document.select(".entry-content a").forEach { link ->
-            val href = link.attr("href")
-            if (href.contains("ok.ru") || href.contains("mail.ru") || href.contains("fembed") || href.contains("sbani.me")) {
-                loadExtractor(href, data, subtitleCallback, callback)
-            }
+        // Check for links in content that might be players
+        document.select(".entry-content a[href*='drive.google'], .entry-content a[href*='ok.ru'], .entry-content a[href*='mail.ru']").forEach {
+            val href = it.attr("abs:href")
+            loadExtractor(href, data, callback, callback)
         }
 
         return true
