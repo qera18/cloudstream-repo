@@ -1,0 +1,15 @@
+{
+  "name": "TestPlugin",
+  "description": "CloudStream3 plugin repository — TestPlugin",
+  "plugins": [
+    {
+      "name": "TestPlugin",
+      "module": "TestPluginProvider",
+      "version": "1.0.0",
+      "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/TestPluginProvider.kt",
+      "sha256": "907f7e5b8b86ed44fc44146928340835d19db11fc6bb5419d445764642487a13",
+      "size": 3787,
+      "icon": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png"
+    }
+  ]
+}
