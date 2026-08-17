@@ -1,25 +1,25 @@
-// Animecix module
-
-version = 1
-
-cloudstream {
-    language = "en"
-    authors = listOf("qera18")
-    description = "Access to the site is blocked due to a security service"
-    status = 1 // 0: Down, 1: Ok, 2: Slow, 3: Beta
-    tvTypes = listOf("Anime")
-    iconUrl = "https://www.google.com/s2/favicons?domain=animecix.tv&sz=%size%"
+plugins {
+    id("com.android.application")
+    id("kotlin-android")
 }
 
 android {
+    namespace = "com.qera18.animecix"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 21
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-    }
+dependencies {
+    compileOnly("com.lagradost:cloudstream3:1.0.0")
 }
