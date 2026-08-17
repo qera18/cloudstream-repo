@@ -1,44 +1,35 @@
 [
   {
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/BelgeselProvider.kt",
-    "status": 1,
-    "version": 1,
     "name": "Belgesel",
-    "internalName": "BelgeselProvider",
+    "pluginClassName": "BelgeselPlugin",
+    "version": 1,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Belgesel/Belgesel.cs3",
+    "status": 1,
     "authors": [
-      "CloudStream Auto Builder"
+      "qera18"
     ],
-    "description": "Auto-generated CloudStream3 plugin for Belgesel (https://belgeselx.com/)",
-    "fileSize": 5631,
-    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-e12bd18bb3ef42658b1467e52f8f421ec4f9d12bd7c848895c612b339b5aa428"
+    "description": "Auto-generated provider for CloudStream"
   },
   {
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/AnimeProvider.kt",
-    "status": 1,
-    "version": 1,
     "name": "Anime",
-    "internalName": "AnimeProvider",
+    "pluginClassName": "AnimePlugin",
+    "version": 1,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Anime/Anime.cs3",
+    "status": 1,
     "authors": [
-      "CloudStream Auto Builder"
+      "qera18"
     ],
-    "description": "Auto-generated CloudStream3 plugin for Anime (https://cizgimax.online/)",
-    "fileSize": 6348,
-    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
+    "description": "Auto-generated provider for CloudStream"
+  },
+  {
+    "name": "Belgeselx",
+    "pluginClassName": "BelgeselxPlugin",
+    "version": 1,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Belgeselx/Belgeselx.cs3",
+    "status": 1,
+    "authors": [
+      "qera18"
     ],
-    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-c0be1fcd5a6281d1411f5c966907cab4e23df45c2e8991d48998c3e055327191"
+    "description": "Auto-generated provider for CloudStream"
   }
 ]
