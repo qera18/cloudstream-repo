@@ -31,5 +31,16 @@
       "qera18"
     ],
     "description": "Auto-generated provider for CloudStream"
+  },
+  {
+    "name": "Animecix",
+    "pluginClassName": "AnimecixPlugin",
+    "version": 1,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Animecix/Animecix.cs3",
+    "status": 1,
+    "authors": [
+      "qera18"
+    ],
+    "description": "Auto-generated provider for CloudStream"
   }
 ]
