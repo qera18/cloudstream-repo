@@ -1,0 +1,9 @@
+{
+  "name": "Asyawatch",
+  "version": "1.0",
+  "description": "Asyawatch plugin for CloudStream",
+  "author": "Your Name",
+  "icon": "https://asyawatch.com/favicon.ico",
+  "main": "AsyawatchPlugin.kt",
+  "provider": "AsyawatchProvider.kt"
+}

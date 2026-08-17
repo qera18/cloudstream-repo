@@ -1,0 +1,27 @@
+[
+    {
+        "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/Animecix.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "Animecix",
+        "internalName": "Animecix",
+        "authors": [
+            "qera18"
+        ],
+        "description": "Animecix plugin for CloudStream",
+        "fileSize": 9756,
+        "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
+        "language": "tr",
+        "tvTypes": [
+            "Anime",
+            "TvSeries",
+            "Movie",
+            "OVA",
+            "ONA",
+            "Special"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.tv&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-281bbfbb578028d3f5a5a88fcff79013fb792a6441efa7b05d5befc2c47464da"
+    }
+]

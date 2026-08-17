@@ -1,0 +1,9 @@
+// manifest.json
+{
+    "name": "Animecix",
+    "description": "Animecix plugin for CloudStream",
+    "version": "1.0",
+    "author": "Your Name",
+    "id": "Animecix",
+    "main": "AnimecixPlugin"
+}
