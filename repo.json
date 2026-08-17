@@ -1,6 +1,8 @@
 {
-  "name": "qera18 CloudStream Plugins",
-  "description": "Auto-generated CloudStream plugins repository",
+  "name": "qera18 CloudStream Repo",
+  "description": "Auto-generated CloudStream plugin repository built with CloudStream Plugin Builder.",
   "manifestVersion": 1,
-  "pluginUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
+  "pluginLists": [
+    "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
+  ]
 }
