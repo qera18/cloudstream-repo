@@ -1,38 +1,5 @@
 [
   {
-    "name": "Belgesel",
-    "pluginClassName": "BelgeselPlugin",
-    "version": 1,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Belgesel/Belgesel.cs3",
-    "status": 1,
-    "authors": [
-      "qera18"
-    ],
-    "description": "Auto-generated provider for CloudStream"
-  },
-  {
-    "name": "Anime",
-    "pluginClassName": "AnimePlugin",
-    "version": 1,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Anime/Anime.cs3",
-    "status": 1,
-    "authors": [
-      "qera18"
-    ],
-    "description": "Auto-generated provider for CloudStream"
-  },
-  {
-    "name": "Belgeselx",
-    "pluginClassName": "BelgeselxPlugin",
-    "version": 1,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Belgeselx/Belgeselx.cs3",
-    "status": 1,
-    "authors": [
-      "qera18"
-    ],
-    "description": "Auto-generated provider for CloudStream"
-  },
-  {
     "name": "Animecix",
     "pluginClassName": "AnimecixPlugin",
     "version": 1,
@@ -41,6 +8,11 @@
     "authors": [
       "qera18"
     ],
-    "description": "Auto-generated provider for CloudStream"
+    "description": "Access to the site is blocked due to a security service",
+    "tvTypes": [
+      "Anime"
+    ],
+    "language": "en",
+    "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.tv&sz=64"
   }
 ]
