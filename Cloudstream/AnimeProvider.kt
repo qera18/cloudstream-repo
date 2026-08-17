@@ -8,81 +8,41 @@ import org.jsoup.nodes.Element
 import org.jsoup.Jsoup
 
 class AnimeProvider : MainAPI() {
-    override var name = "Anime"
     override var mainUrl = "https://animecix.tv"
-    private val apiUrl = "https://api.animecix.tv"
-    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.Movie, TvType.TvSeries)
+    override var name = "Anime"
+    override val hasMainPage = true
     override var lang = "tr"
+    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.TvSeries)
+
+    private val apiUrl = "https://api.animecix.net"
 
     companion object {
-        val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.Movie, TvType.TvSeries)
-
-        data class SearchResult(
-            val name: String?,
-            val slug: String?,
-            val poster: String?,
-            val type: String?
-        )
-
-        data class SearchData(
-            val data: List<SearchResult>?
-        )
-
-        data class TitleResponse(
-            val name: String?,
-            val description: String?,
-            val poster: String?,
-            val banner: String?,
-            val type: String?,
-            val release_date: String?,
-            val seasons: List<SeasonData>?,
-            val trailer: String?
-        )
-
-        data class SeasonData(
-            val name: String?,
-            val episodes: List<EpisodeData>?
-        )
-
-        data class EpisodeData(
-            val id: Int,
-            val name: String?,
-            val number: String?
-        )
-
-        data class WatchResponse(
-            val video: List<VideoSource>?,
-            val subtitle: List<SubtitleSource>?
-        )
-
-        data class VideoSource(
-            val url: String?,
-            val name: String?
-        )
-
-        data class SubtitleSource(
-            val url: String?,
-            val lang: String?
-        )
+        fun getType(type: String?): TvType {
+            return when (type?.lowercase()) {
+                "movie", "film" -> TvType.AnimeMovie
+                "tv", "series" -> TvType.Anime
+                else -> TvType.Anime
+            }
+        }
     }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
         val items = mutableListOf<HomePageList>()
-        val categories = listOf(
-            Pair("Son Eklenenler", "$apiUrl/titles/latest"),
-            Pair("Popüler Animeler", "$apiUrl/titles/popular?type=anime"),
-            Pair("Popüler Diziler", "$apiUrl/titles/popular?type=tv")
+        val urls = listOf(
+            Pair("Son Eklenenler", "$apiUrl/home"),
+            Pair("Popüler", "$apiUrl/home"),
+            Pair("Yeni Bölümler", "$apiUrl/home")
         )
 
-        for (cat in categories) {
-            val response = app.get(cat.second).parsedSafe<SearchData>()
-            val searchResponses = response?.data?.mapNotNull {
-                newAnimeSearchResponse(it.name ?: return@mapNotNull null, "$mainUrl/anime/${it.slug}", TvType.Anime) {
-                    posterUrl = it.poster
+        urls.forEach { (title, url) ->
+            val response = app.get(url).parsedSafe<HomeResponse>()
+            val animeList = response?.data?.new_animes?.map {
+                newAnimeSearchResponse(it.name ?: "", it.slug ?: "", TvType.Anime) {
+                    this.posterUrl = it.poster_url
                 }
             }
-            if (!searchResponses.isNullOrEmpty()) {
-                items.add(HomePageList(cat.first, searchResponses))
+            if (!animeList.isNullOrEmpty()) {
+                items.add(HomePageList(title, animeList))
             }
         }
 
@@ -90,50 +50,48 @@ class AnimeProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val response = app.get("$apiUrl/search?query=$query").parsedSafe<SearchData>()
-        return response?.data?.mapNotNull {
-            newAnimeSearchResponse(it.name ?: return@mapNotNull null, "$mainUrl/anime/${it.slug}", TvType.Anime) {
-                posterUrl = it.poster
+        val response = app.get("$apiUrl/search?q=$query").parsedSafe<SearchData>()
+        return response?.data?.map {
+            newAnimeSearchResponse(it.name ?: "", it.slug ?: "", getType(it.type)) {
+                this.posterUrl = it.poster_url
             }
         } ?: emptyList()
     }
 
     override suspend fun load(url: String): LoadResponse? {
         val slug = url.split("/").last()
-        val titleData = app.get("$apiUrl/titles/$slug").parsedSafe<TitleResponse>() ?: return null
+        val details = app.get("$apiUrl/anime-detail/$slug").parsedSafe<AnimeDetail>() ?: return null
         
-        val type = if (titleData.type?.contains("movie", ignoreCase = true) == true) TvType.AnimeMovie else TvType.Anime
-        val episodes = mutableListOf<Episode>()
-        
-        titleData.seasons?.forEachIndexed { seasonIdx, season ->
-            season.episodes?.forEach { ep ->
-                episodes.add(
-                    Episode(
-                        data = ep.id.toString(),
-                        name = ep.name,
-                        episode = ep.number?.toIntOrNull(),
-                        season = seasonIdx + 1
-                    )
-                )
-            }
+        val title = details.data?.name ?: ""
+        val poster = details.data?.poster_url
+        val description = details.data?.description
+        val type = getType(details.data?.type)
+        val year = details.data?.year?.toIntOrNull()
+        val status = when (details.data?.status) {
+            "1" -> ShowStatus.Ongoing
+            "2" -> ShowStatus.Completed
+            else -> null
         }
 
-        val loadResponse = if (type == TvType.AnimeMovie) {
-            newMovieLoadResponse(titleData.name ?: "", url, type, episodes.firstOrNull()?.data ?: "") {
-                posterUrl = titleData.poster
-                plot = titleData.description
-                year = titleData.release_date?.split("-")?.firstOrNull()?.toIntOrNull()
-            }
-        } else {
-            newTvSeriesLoadResponse(titleData.name ?: "", url, type, episodes) {
-                posterUrl = titleData.poster
-                plot = titleData.description
-                year = titleData.release_date?.split("-")?.firstOrNull()?.toIntOrNull()
-            }
-        }
+        val episodes = details.data?.episodes?.map { ep ->
+            val epNum = ep.number?.toIntOrNull() ?: 1
+            val epName = ep.name ?: "Bölüm $epNum"
+            Episode(
+                data = ep.id.toString(),
+                name = epName,
+                episode = epNum,
+                season = 1,
+                posterUrl = poster
+            )
+        }?.sortedBy { it.episode } ?: emptyList()
 
-        titleData.trailer?.let { loadResponse.addTrailer(it) }
-        return loadResponse
+        return newAnimeLoadResponse(title, url, type) {
+            this.posterUrl = poster
+            this.plot = description
+            this.year = year
+            this.showStatus = status
+            this.addEpisodes(TvType.Anime, episodes)
+        }
     }
 
     override suspend fun loadLinks(
@@ -142,30 +100,55 @@ class AnimeProvider : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val watchData = app.get("$apiUrl/watch/$data").parsedSafe<WatchResponse>()
-        
-        watchData?.subtitle?.forEach { sub ->
-            subtitleCallback(SubtitleFile(sub.lang ?: "Turkish", sub.url ?: return@forEach))
-        }
+        val episodeId = data
+        val videoSources = app.get("$apiUrl/episode-videos/$episodeId").parsedSafe<VideoSources>()
 
-        watchData?.video?.forEach { video ->
-            val videoUrl = video.url ?: return@forEach
-            if (videoUrl.contains("animecix.tv/player")) {
-                loadExtractor(videoUrl, "$mainUrl/", subtitleCallback, callback)
+        videoSources?.data?.forEach { source ->
+            val videoUrl = source.url ?: return@forEach
+            val label = source.name ?: "Source"
+
+            if (videoUrl.contains("tau-player") || videoUrl.contains("anm.cx")) {
+                val directData = app.get(videoUrl).text
+                // Tau-player logic extraction would go here, often uses internal API or base64
+                loadExtractor(videoUrl, subtitleCallback, callback)
             } else {
-                callback(
-                    ExtractorLink(
-                        video.name ?: "Animecix",
-                        video.name ?: "Animecix",
-                        videoUrl,
-                        "$mainUrl/",
-                        Qualities.Unknown.value,
-                        isM3u8 = videoUrl.contains(".m3u8")
-                    )
-                )
+                loadExtractor(videoUrl, subtitleCallback, callback)
             }
         }
-        
+
         return true
     }
+
+    data class HomeResponse(val data: HomeData?)
+    data class HomeData(val new_animes: List<AnimeItem>?)
+    data class SearchData(val data: List<AnimeItem>?)
+    data class AnimeItem(
+        val name: String?,
+        val slug: String?,
+        val poster_url: String?,
+        val type: String?
+    )
+
+    data class AnimeDetail(val data: DetailData?)
+    data class DetailData(
+        val name: String?,
+        val description: String?,
+        val poster_url: String?,
+        val type: String?,
+        val year: String?,
+        val status: String?,
+        val episodes: List<EpisodeItem>?
+    )
+
+    data class EpisodeItem(
+        val id: Int?,
+        val name: String?,
+        val number: String?
+    )
+
+    data class VideoSources(val data: List<VideoSourceItem>?)
+    data class VideoSourceItem(
+        val name: String?,
+        val url: String?
+    )
 }
