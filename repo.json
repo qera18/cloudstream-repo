@@ -1,6 +1,6 @@
 {
-  "name": "Anime Repo",
-  "description": "CloudStream3 plugin repository — Anime",
+  "name": "qera18 CloudStream Repo",
+  "description": "Plugins generated with CloudStream Plugin Builder.",
   "manifestVersion": 1,
   "pluginLists": [
     "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
