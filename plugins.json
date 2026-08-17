@@ -14,5 +14,13 @@
     ],
     "language": "en",
     "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.tv&sz=64"
+  },
+  {
+    "name": "AnimeCix",
+    "internalName": "animecix",
+    "version": 1,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/animecix.cs3",
+    "status": 1,
+    "language": "en"
   }
 ]
