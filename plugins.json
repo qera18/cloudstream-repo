@@ -30,7 +30,7 @@
       "CloudStream Auto Builder"
     ],
     "description": "Auto-generated CloudStream3 plugin for Anime (https://cizgimax.online/)",
-    "fileSize": 3831,
+    "fileSize": 6348,
     "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
     "language": "en",
     "tvTypes": [
@@ -39,6 +39,6 @@
     ],
     "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
     "apiVersion": 1,
-    "fileHash": "sha256-6ef44c2e1f50317ec380169b6914e06ede7afbff153509e0e330ca0b2b837904"
+    "fileHash": "sha256-c0be1fcd5a6281d1411f5c966907cab4e23df45c2e8991d48998c3e055327191"
   }
 ]
