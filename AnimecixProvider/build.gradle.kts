@@ -1,8 +1,12 @@
 // Use an integer for version numbers
 version = 1
 
+android {
+    namespace = "com.qera18.animecixprovider"
+}
+
 cloudstream {
-    description = "AnimeCix sitesinden anime filmleri ve bölümleri sağlayan CloudStream3 eklentisi."
+    description = "Animecix.tv için CloudStream 3 provider, temel arama, ana sayfa ve izleme linki çıkarımı sağlar."
     authors = listOf("qera18")
     status = 1
     tvTypes = listOf("Movie", "TvSeries")
