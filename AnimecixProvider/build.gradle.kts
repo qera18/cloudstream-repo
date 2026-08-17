@@ -2,7 +2,7 @@
 version = 1
 
 cloudstream {
-    description = "Animecix.tv için temel arama, ana sayfa ve izleme linki sağlayan CloudStream 3 eklentisi."
+    description = "AnimeCix sitesinden anime filmleri ve bölümleri sağlayan CloudStream3 eklentisi."
     authors = listOf("qera18")
     status = 1
     tvTypes = listOf("Movie", "TvSeries")
