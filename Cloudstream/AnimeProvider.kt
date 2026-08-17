@@ -8,95 +8,140 @@ import org.jsoup.nodes.Element
 import org.jsoup.Jsoup
 
 class AnimeProvider : MainAPI() {
-    companion object {
-        val supportedTypes = setOf(TvType.Movie, TvType.TvSeries, TvType.Anime)
-    }
-
-    override var mainUrl = "https://asyaminik.com"
     override var name = "Anime"
-    override val supportedTypes = AnimeProvider.supportedTypes
+    override var mainUrl = "https://animecix.tv"
+    override var lang = "tr"
+    override val hasMainPage = true
 
-    override val mainPage = mainPageOf(
-        "/" to "Son Eklenenler",
-        "/category/anime/" to "Anime",
-        "/category/diziler/" to "Diziler",
-        "/category/filmler/" to "Filmler",
-        "/category/haberler/" to "Haberler"
+    override val supportedTypes = setOf(
+        TvType.Anime,
+        TvType.AnimeMovie,
+        TvType.TvSeries,
+        TvType.Movie
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = if (page <= 1) "$mainUrl${request.data}" else "$mainUrl${request.data}page/$page/"
-        val document = app.get(url).document
-        val home = document.select("article.post, .item, .post-column").mapNotNull {
-            it.toSearchResult()
+    override suspend fun getMainPage(
+        page: Int,
+        request: MainPageRequest
+    ): HomePageResponse? {
+        val document = app.get(mainUrl).document
+        val homePages = mutableListOf<HomePageList>()
+
+        val sections = listOf(
+            Pair("Son Eklenenler", "app-anime-card"),
+            Pair("Popüler", ".card")
+        )
+
+        sections.forEach { (title, selector) ->
+            val items = document.select(selector).mapNotNull {
+                it.toSearchResult()
+            }
+            if (items.isNotEmpty()) {
+                homePages.add(HomePageList(title, items))
+            }
         }
-        return newHomePageResponse(request.name, home)
+
+        return HomePageResponse(homePages)
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val titleElement = this.selectFirst(".entry-title a, .post-title a, h2 a") ?: return null
-        val title = titleElement.text().trim()
-        val href = titleElement.attr("abs:href")
-        val posterUrl = this.selectFirst("img")?.attr("abs:src")
-        
-        return newAnimeSearchResponse(title, href, TvType.Anime) {
+        val title = this.selectFirst(".card-title, .title, h5")?.text() ?: return null
+        val href = this.selectFirst("a")?.attr("href") ?: return null
+        val posterUrl = this.selectFirst("img")?.attr("src")
+
+        return newAnimeSearchResponse(title, fixUrl(href)) {
             this.posterUrl = posterUrl
         }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/?s=$query").document
-        return document.select("article.post, .item, .post-column").mapNotNull {
+        val url = "$mainUrl/search?query=$query"
+        val response = app.get(url).document
+
+        return response.select("app-anime-card, .card").mapNotNull {
             it.toSearchResult()
         }
     }
 
-    override suspend fun load(url: String): LoadResponse {
+    override suspend fun load(url: String): LoadResponse? {
         val document = app.get(url).document
-        val title = document.selectFirst("h1.entry-title, .post-title")?.text()?.trim() ?: ""
-        val poster = document.selectFirst("meta[property='og:image']")?.attr("content")
-        val plot = document.selectFirst(".entry-content p, .post-content p")?.text()
-        
-        val isMovie = url.contains("/filmler/") || url.contains("-filmi/") || document.select(".category-filmler").isNotEmpty()
-        
-        return if (isMovie) {
-            newMovieLoadResponse(title, url, TvType.Movie, url) {
+
+        val title = document.selectFirst("h1, .anime-title")?.text() ?: ""
+        val poster = document.selectFirst(".poster img, img.anime-image")?.attr("src")
+        val description = document.selectFirst(".description, .synopsis")?.text()
+        val year = document.selectFirst(".year, .date")?.text()?.toIntOrNull()
+        val trailer = document.selectFirst("iframe[src*=youtube]")?.attr("src")
+
+        val type = if (url.contains("movie")) TvType.AnimeMovie else TvType.Anime
+
+        if (type == TvType.AnimeMovie) {
+            return newMovieLoadResponse(title, url, TvType.AnimeMovie, url) {
                 this.posterUrl = poster
-                this.plot = plot
+                this.plot = description
+                this.year = year
+                addTrailer(trailer)
             }
-        } else {
-            // WordPress posts are often individual episodes, but we treat them as a series entry point
-            newTvSeriesLoadResponse(title, url, TvType.TvSeries, listOf(Episode(url, "İzle"))) {
-                this.posterUrl = poster
-                this.plot = plot
-            }
+        }
+
+        val episodes = document.select(".episode-list a, .episodes a").mapNotNull {
+            val epName = it.text()
+            val epHref = it.attr("href")
+            val epNum = epName.filter { char -> char.isDigit() }.toIntOrNull()
+            Episode(fixUrl(epHref), epName, episode = epNum)
+        }
+
+        return newTvSeriesLoadResponse(title, url, TvType.Anime, episodes) {
+            this.posterUrl = poster
+            this.plot = description
+            this.year = year
+            addTrailer(trailer)
         }
     }
 
     override suspend fun loadLinks(
         data: String,
-        isDataJob: Boolean,
-        callback: (SubtitleFile) -> Unit,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).document
         
-        // Look for common WordPress embed patterns
-        val frames = document.select("iframe[src*='embed'], iframe[src*='player'], iframe[src*='video'], .video-container iframe")
-        
-        frames.forEach { iframe ->
-            var src = iframe.attr("src")
-            if (src.startsWith("//")) src = "https:$src"
-            
-            if (src.isNotEmpty() && !src.contains("facebook.com") && !src.contains("twitter.com")) {
-                loadExtractor(src, data, callback, callback)
+        // Extraction logic for internal player and HLS sources
+        // Often found in script tags or iframe sources in Animecix
+        document.select("iframe").forEach { iframe ->
+            val src = fixUrl(iframe.attr("src"))
+            if (src.contains("m3u8") || src.contains("playlist")) {
+                callback.invoke(
+                    ExtractorLink(
+                        name,
+                        "HLS Source",
+                        src,
+                        referer = mainUrl,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = true
+                    )
+                )
             }
+            loadExtractor(src, mainUrl, subtitleCallback, callback)
         }
 
-        // Check for links in content that might be players
-        document.select(".entry-content a[href*='drive.google'], .entry-content a[href*='ok.ru'], .entry-content a[href*='mail.ru']").forEach {
-            val href = it.attr("abs:href")
-            loadExtractor(href, data, callback, callback)
+        // Direct stream search in scripts
+        val scripts = document.select("script").map { it.data() }
+        scripts.forEach { script ->
+            val m3u8Regex = """["'](http[^"']+\.m3u8[^"']*)["']""".toRegex()
+            m3u8Regex.findAll(script).forEach { match ->
+                val videoUrl = match.groupValues[1]
+                callback.invoke(
+                    ExtractorLink(
+                        name,
+                        "Internal HLS",
+                        videoUrl,
+                        referer = mainUrl,
+                        quality = Qualities.Unknown.value,
+                        isM3u8 = true
+                    )
+                )
+            }
         }
 
         return true
