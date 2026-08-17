@@ -1,3 +1,17 @@
-rootProject.name = "cloudstream-repo"
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
 
-include("Animecix")
+rootProject.name = "cloudstream-repo"
+include(":Animecix")
