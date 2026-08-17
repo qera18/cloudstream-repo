@@ -1,25 +1,17 @@
 [
   {
-    "name": "Animecix",
-    "pluginClassName": "AnimecixPlugin",
-    "version": 1,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Animecix/Animecix.cs3",
-    "status": 1,
-    "authors": [
-      "qera18"
-    ],
-    "description": "Access to the site is blocked due to a security service",
-    "tvTypes": [
-      "Anime"
-    ],
-    "language": "en",
-    "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.tv&sz=64"
-  },
-  {
     "name": "AnimeCix",
     "internalName": "animecix",
     "version": 3,
     "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/animecix.cs3",
+    "status": 1,
+    "language": "en"
+  },
+  {
+    "name": "Animecix",
+    "internalName": "animecix",
+    "version": 2,
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/animecix/animecix.cs3",
     "status": 1,
     "language": "en"
   }
