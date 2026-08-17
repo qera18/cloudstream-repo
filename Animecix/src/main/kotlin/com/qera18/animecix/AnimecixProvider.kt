@@ -1,67 +1,71 @@
 package com.qera18.animecix
 
-import com.lagradost.cloudstream3.MainAPI
-import com.lagradost.cloudstream3.MainAPI.Companion.app
-import com.lagradost.cloudstream3.MainAPI.Companion.base64Decode
-import com.lagradost.cloudstream3.MainAPI.Companion.getQuality
-import com.lagradost.cloudstream3.MainAPI.Companion.newMovieSearchResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.newMovieLoadResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.newHomePageResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.newSearchResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.newShowSearchResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.resolveUrl
-import com.lagradost.cloudstream3.MainAPI.Companion.setSearchResponse
-import com.lagradost.cloudstream3.MainAPI.Companion.setSubSearchResponse
-import com.lagradost.cloudstream3.utils.AppUtils
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.AppUtils.toJson
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import org.jsoup.nodes.Element
-import java.util.*
 
 class AnimecixProvider : MainAPI() {
     override var mainUrl = "https://animecix.tv"
-    override var name = "Animecix"
-    override val hasMainPage = true
-    override val hasChromecastSupport = false
-    override val hasDownloadSupport = true
-    override val supportedTypes = setOf(TvType.Anime, TvType.OVA)
+    override var name = "AnimeCix"
+    override val hasMainPage = false
+    override var lang = "en"
+    override val supportedTypes = setOf(
+        TvType.Anime
+    )
 
-    override suspend fun getMainPage(): HomePageResponse {
-        val document = app.get(mainUrl).document
-        val home = newHomePageResponse()
-        document.select("div.post").forEach { post ->
-            val title = post.selectFirst("h2.entry-title")?.text() ?: ""
-            val link = post.selectFirst("a")?.attr("href") ?: ""
-            val image = post.selectFirst("img")?.attr("src") ?: ""
-            home.add(newMovieSearchResponse(title, link, image))
+    override val mainPage = mainPageOf(
+        "$mainUrl/movies?page=" to "Movies",
+        "$mainUrl/tv-shows?page=" to "TV Shows",
+        "$mainUrl/latest?page=" to "Latest",
+    )
+
+    override suspend fun getMainPage(
+        page: Int,
+        request: MainPageRequest
+    ): HomePageResponse {
+        val document = app.get(request.data + page).document
+        val home = document.select("div.film_list-wrap div.flw-item").mapNotNull {
+            it.toSearchResult()
         }
-        return home
+        return newHomePageResponse(request.name, home)
+    }
+
+    private fun Element.toSearchResult(): SearchResponse? {
+        val title = this.selectFirst("h3.film-name a")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("h3.film-name a")?.attr("href")) ?: return null
+        val posterUrl = fixUrlNull(this.selectFirst("img")?.attr("data-src"))
+            ?: fixUrlNull(this.selectFirst("img")?.attr("src"))
+        return newMovieSearchResponse(title, href, TvType.Movie) {
+            this.posterUrl = posterUrl
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/?s=$query").document
-        val search = newSearchResponse()
-        document.select("div.post").forEach { post ->
-            val title = post.selectFirst("h2.entry-title")?.text() ?: ""
-            val link = post.selectFirst("a")?.attr("href") ?: ""
-            val image = post.selectFirst("img")?.attr("src") ?: ""
-            search.add(newMovieSearchResponse(title, link, image))
+        val document = app.get("$mainUrl/search/$query").document
+        return document.select("div.film_list-wrap div.flw-item").mapNotNull {
+            it.toSearchResult()
         }
-        return search
     }
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
-        val title = document.selectFirst("h1.entry-title")?.text() ?: ""
-        val description = document.selectFirst("div.entry-content")?.text() ?: ""
-        val poster = document.selectFirst("img.featured-image")?.attr("src") ?: ""
-        val load = newMovieLoadResponse(title, url, poster, description)
-        document.select("div.episode").forEach { episode ->
-            val episodeTitle = episode.selectFirst("a")?.text() ?: ""
-            val episodeLink = episode.selectFirst("a")?.attr("href") ?: ""
-            load.addEpisode(episodeTitle, episodeLink)
+        val title = document.selectFirst("h2.heading-name")?.text()?.trim() ?: "Untitled"
+        val poster = fixUrlNull(document.selectFirst("div.film-poster img")?.attr("src"))
+        val plot = document.selectFirst("div.description")?.text()?.trim()
+        val tags = document.select("div.row-line a").map { it.text() }
+        val year = document.selectFirst("span.year")?.text()?.trim()?.toIntOrNull()
+        val trailer = document.selectFirst("iframe.trailer")?.attr("src")
+
+        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+            this.posterUrl = poster
+            this.plot = plot
+            this.tags = tags
+            this.year = year
+            addTrailer(trailer)
         }
-        return load
     }
 
     override suspend fun loadLinks(
@@ -69,22 +73,12 @@ class AnimecixProvider : MainAPI() {
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
-    ) {
+    ): Boolean {
         val document = app.get(data).document
-        val links = document.select("div.download")
-        links.forEach { link ->
-            val quality = getQuality(link.selectFirst("span.quality")?.text() ?: "")
-            val linkUrl = link.selectFirst("a")?.attr("href") ?: ""
-            callback(
-                ExtractorLink(
-                    name,
-                    name,
-                    linkUrl,
-                    "",
-                    quality,
-                    false
-                )
-            )
+        document.select("div.server-item a").apmap { server ->
+            val embedUrl = fixUrlNull(server.attr("data-embed")) ?: return@apmap
+            loadExtractor(embedUrl, data, subtitleCallback, callback)
         }
+        return true
     }
 }
