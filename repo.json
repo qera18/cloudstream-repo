@@ -1,6 +1,6 @@
 {
-  "name": "Anime Repo",
-  "description": "CloudStream3 plugin repository — Anime",
+  "name": "Belgesel Repo",
+  "description": "CloudStream3 plugin repository — Belgesel",
   "manifestVersion": 1,
   "pluginLists": [
     "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
