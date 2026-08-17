@@ -1,18 +1,23 @@
 [
-  {
-    "name": "AnimeCix",
-    "internalName": "animecix",
-    "version": 3,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/animecix.cs3",
-    "status": 1,
-    "language": "en"
-  },
-  {
-    "name": "Animecix",
-    "internalName": "animecix",
-    "version": 2,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/animecix/animecix.cs3",
-    "status": 1,
-    "language": "en"
-  }
+    {
+        "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/Animecix.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "Animecix",
+        "internalName": "Animecix",
+        "authors": [
+            "qera18"
+        ],
+        "description": "Animecix plugin for CloudStream",
+        "fileSize": 6686,
+        "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
+        "language": "tr",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=animecix.tv&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-e3efdfe1ef1b0d5592032b2146c6b9ccd0d498c52d9e6361ac539fcfb1f3707e"
+    }
 ]
