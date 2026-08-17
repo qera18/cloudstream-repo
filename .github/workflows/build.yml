@@ -54,9 +54,9 @@ jobs:
         run: |
           chmod +x gradlew
           if [ -n "${{ inputs.plugin }}" ]; then
-            ./gradlew ":${{ inputs.plugin }}:makePlugins"
+            ./gradlew ":${{ inputs.plugin }}:build"
           else
-            ./gradlew makePlugins
+            ./gradlew build
           fi
 
       - name: Collect .cs3 artifacts
