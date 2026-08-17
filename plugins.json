@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/AnimeProvider.kt",
+    "status": 1,
+    "version": 1,
+    "name": "Anime",
+    "internalName": "AnimeProvider",
+    "authors": [
+      "CloudStream Auto Builder"
+    ],
+    "description": "Auto-generated CloudStream3 plugin for Anime (https://animecix.tv/)",
+    "fileSize": 5116,
+    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-2e36ca25da6eda57e57fb170c9987ee0c71ec1ceb22311f2789fff4416b37523"
+  }
+]
