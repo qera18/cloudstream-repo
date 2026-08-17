@@ -9,19 +9,19 @@ import org.jsoup.nodes.Element
 
 class AnimecixProvider : MainAPI() {
     override var mainUrl = "https://animecix.tv"
-    override var name = "AnimeCix"
+    override var name = "Animecix"
     override val supportedTypes = setOf(TvType.Movie, TvType.TvSeries)
     override var lang = "tr"
     override val hasMainPage = true
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get(mainUrl).document
-        val items = document.select("div.post-item").mapNotNull { it.toSearchResponse() }
-        return HomePageResponse(listOf(HomePageList("Yeni Bölümler", items, false)), false)
+        val items = document.select("div.item").mapNotNull { it.toSearchResponse() }
+        return HomePageResponse(listOf(HomePageList("Ana Sayfa", items, false)), false)
     }
 
     private fun Element.toSearchResponse(): SearchResponse? {
-        val title = this.selectFirst("h3.title a")?.text() ?: return null
+        val title = this.selectFirst("a.title")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a")?.attr("href") ?: return null)
         val poster = this.selectFirst("img")?.attr("src")
         return newMovieSearchResponse(title, href, TvType.Movie) {
@@ -31,15 +31,15 @@ class AnimecixProvider : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val document = app.get("$mainUrl/search/$query").document
-        return document.select("div.search-result").mapNotNull { it.toSearchResponse() }
+        return document.select("div.item").mapNotNull { it.toSearchResponse() }
     }
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
-        val title = document.selectFirst("h1.title")?.text() ?: "AnimeCix"
-        val poster = document.selectFirst("div.poster img")?.attr("src")
-        val description = document.selectFirst("div.description")?.text()
-        val episodes = document.select("ul.episode-list li a").mapNotNull {
+        val title = document.selectFirst("h1.title")?.text() ?: "Animecix"
+        val poster = document.selectFirst("meta[property=og:image]")?.attr("content")
+        val description = document.selectFirst("meta[property=og:description]")?.attr("content")
+        val episodes = document.select("ul.episodes li a").mapNotNull {
             val epName = it.text()
             val epUrl = fixUrl(it.attr("href"))
             Episode(epUrl, epName)
@@ -63,7 +63,7 @@ class AnimecixProvider : MainAPI() {
         subtitleCallback: SubtitleCallback,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        loadExtractor(data, mainUrl, subtitleCallback, callback)
+        loadExtractor(data, "$mainUrl/", subtitleCallback, callback)
         return true
     }
 }
