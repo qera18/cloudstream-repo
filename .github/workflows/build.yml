@@ -78,6 +78,7 @@ jobs:
             echo "No .cs3 files to commit"
           else
             git commit -m "chore: build .cs3 artifacts"
-            git pull --rebase origin $(git rev-parse --abbrev-ref HEAD) || true
-            git push
+            git fetch origin main
+            git rebase origin/main || git rebase --abort
+            git push origin HEAD:main
           fi
