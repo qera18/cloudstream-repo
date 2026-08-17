@@ -39,17 +39,24 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew || true
+      - name: Ensure Gradle Wrapper exists
+        run: |
+          # Wrapper jar yoksa veya bozuksa yeniden üret
+          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "gradle-wrapper.jar missing → regenerating wrapper..."
+            gradle wrapper --gradle-version 8.11.1 --distribution-type bin
+          fi
+          chmod +x gradlew || true
+          ls -la gradlew gradle/wrapper/ || true
 
       - name: Build all plugins
         run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew make makePluginsJson --stacktrace
+          # Önce wrapper ile dene, olmazsa doğrudan gradle kullan
+          if [ -f "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+            ./gradlew make --stacktrace || gradle make --stacktrace
           else
-            gradle wrapper --gradle-version 8.11.1 --distribution-type bin
-            chmod +x gradlew
-            ./gradlew make makePluginsJson --stacktrace
+            echo "Using system gradle because wrapper is incomplete"
+            gradle make --stacktrace
           fi
 
       - name: Collect .cs3 artifacts
@@ -60,7 +67,7 @@ jobs:
             if [ -n "$module" ] && [ "$module" != "." ]; then
               mkdir -p "$module"
               cp "$f" "$module/$(basename "$f")"
-              echo "Copied $f -> $module/"
+              echo "Copied $f → $module/"
             fi
           done
 
@@ -68,12 +75,8 @@ jobs:
         run: |
           node << 'EOF'
           const fs = require("fs");
-          const repoOwner = process.env.GITHUB_REPOSITORY
-            ? process.env.GITHUB_REPOSITORY.split("/")[0]
-            : "qera18";
-          const repoName = process.env.GITHUB_REPOSITORY
-            ? process.env.GITHUB_REPOSITORY.split("/")[1]
-            : "cloudstream-repo";
+          const repoOwner = process.env.GITHUB_REPOSITORY_OWNER || "qera18";
+          const repoName = (process.env.GITHUB_REPOSITORY || "qera18/cloudstream-repo").split("/")[1];
           const branch = process.env.GITHUB_REF_NAME || "main";
           const plugins = [];
 
@@ -104,6 +107,7 @@ jobs:
           });
 
           fs.writeFileSync("plugins.json", JSON.stringify(plugins, null, 2));
+          console.log("plugins.json →", plugins.length, "plugins");
 
           const repoJson = {
             name: repoOwner + " CloudStream Repo",
@@ -114,13 +118,14 @@ jobs:
             ]
           };
           fs.writeFileSync("repo.json", JSON.stringify(repoJson, null, 2));
+          console.log("repo.json generated");
           EOF
 
       - name: Commit and push artifacts
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add -A "*.cs3" "plugins.json" "repo.json" || true
+          git add -A "*.cs3" "plugins.json" "repo.json" "gradle/wrapper/gradle-wrapper.jar" || true
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
