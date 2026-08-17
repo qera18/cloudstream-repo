@@ -8,9 +8,6 @@ on:
     branches: [ main, master ]
     paths-ignore:
       - "*.md"
-      - "plugins.json"
-      - "repo.json"
-      - "**/*.cs3"
 
 jobs:
   build:
@@ -33,7 +30,8 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew build
-      - run: |
+      - name: Process .cs3 plugin outputs
+        run: |
           for f in */build/*.cs3; do
             [ -f "$f" ] || continue
             dir=$(dirname "$f")
@@ -41,15 +39,43 @@ jobs:
             mkdir -p "$module"
             cp "$f" "$module/$(basename "$f")"
           done
-      - name: Commit .cs3 outputs
+      - name: Generate plugins.json manifest
+        run: |
+          node -e '
+          const fs = require("fs");
+          const repoOwner = "qera18";
+          const repoName = "cloudstream-repo";
+          const plugins = [];
+
+          fs.readdirSync(".").forEach(file => {
+            if (fs.statSync(file).isDirectory() && !file.startsWith(".") && file !== "build") {
+              const cs3Files = fs.readdirSync(file).filter(f => f.endsWith(".cs3"));
+              if (cs3Files.length > 0) {
+                const pluginName = file;
+                const cs3Name = cs3Files[0];
+                plugins.push({
+                  name: pluginName,
+                  pluginClassName: pluginName + "Plugin",
+                  version: 1,
+                  url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${pluginName}/${cs3Name}`,
+                  status: 1,
+                  authors: [repoOwner],
+                  description: `${pluginName} plugin for CloudStream`
+                });
+              }
+            }
+          });
+          fs.writeFileSync("plugins.json", JSON.stringify(plugins, null, 2));
+          '
+      - name: Commit artifacts and manifests
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          git add -A -- "*.cs3" 2>/dev/null || true
+          git add -A -- "*.cs3" "plugins.json" "repo.json" 2>/dev/null || true
           if git diff --cached --quiet; then
-            echo "No .cs3 files to commit"
+            echo "No changes to commit"
           else
-            git commit -m "chore: build .cs3 artifacts"
+            git commit -m "chore: build plugin artifacts and update manifest"
             git fetch origin main
             git rebase origin/main || git rebase --abort
             git push origin HEAD:main
