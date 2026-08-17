@@ -1,3 +1,5 @@
-rootProject.name = "cloudstream-repo"
+rootProject.name = "CloudstreamPlugins"
 
-include("Animecix")
+include(
+    "Animecix"
+)

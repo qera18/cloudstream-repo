@@ -1,134 +1,73 @@
-name: Build CloudStream Plugins
+name: Build
 
 concurrency:
-  group: build
+  group: "build"
   cancel-in-progress: true
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [master, main]
     paths-ignore:
       - "*.md"
-      - "README.md"
+      - "*.png"
+      - "*.yml"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: "src"
 
-      - name: Set up JDK 17
+      - name: Checkout builds
+        uses: actions/checkout@v4
+        with:
+          ref: "builds"
+          path: "builds"
+
+      - name: Clean old builds
+        run: rm -f $GITHUB_WORKSPACE/builds/*.cs3 || true
+
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: "17"
-          distribution: "temurin"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.11.1"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Ensure Gradle Wrapper exists
+      - name: Build Plugins
         run: |
-          # Wrapper jar yoksa veya bozuksa yeniden üret
-          if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "gradle-wrapper.jar missing → regenerating wrapper..."
-            gradle wrapper --gradle-version 8.11.1 --distribution-type bin
-          fi
-          chmod +x gradlew || true
-          ls -la gradlew gradle/wrapper/ || true
+          cd $GITHUB_WORKSPACE/src
+          chmod +x gradlew
+          ./gradlew make makePluginsJson --stacktrace
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds/ || true
+          cp build/plugins.json $GITHUB_WORKSPACE/builds/ || true
 
-      - name: Build all plugins
+      - name: Ensure repo.json on builds
         run: |
-          # Önce wrapper ile dene, olmazsa doğrudan gradle kullan
-          if [ -f "./gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            ./gradlew make --stacktrace || gradle make --stacktrace
-          else
-            echo "Using system gradle because wrapper is incomplete"
-            gradle make --stacktrace
-          fi
-
-      - name: Collect .cs3 artifacts
-        run: |
-          find . -name "*.cs3" -type f | while read -r f; do
-            dir=$(dirname "$f")
-            module=$(echo "$dir" | sed 's|/build.*||' | sed 's|^./||')
-            if [ -n "$module" ] && [ "$module" != "." ]; then
-              mkdir -p "$module"
-              cp "$f" "$module/$(basename "$f")"
-              echo "Copied $f → $module/"
-            fi
-          done
-
-      - name: Generate plugins.json and repo.json
-        run: |
-          node << 'EOF'
-          const fs = require("fs");
-          const repoOwner = process.env.GITHUB_REPOSITORY_OWNER || "qera18";
-          const repoName = (process.env.GITHUB_REPOSITORY || "qera18/cloudstream-repo").split("/")[1];
-          const branch = process.env.GITHUB_REF_NAME || "main";
-          const plugins = [];
-
-          fs.readdirSync(".").forEach((file) => {
-            try {
-              if (!fs.statSync(file).isDirectory()) return;
-              if (file.startsWith(".") || file === "build" || file === "gradle") return;
-
-              const cs3Files = fs.readdirSync(file).filter((f) => f.endsWith(".cs3"));
-              if (cs3Files.length === 0) return;
-
-              const pluginName = file;
-              const cs3Name = cs3Files[0];
-              const url = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${pluginName}/${cs3Name}`;
-
-              plugins.push({
-                name: pluginName,
-                pluginClassName: pluginName + "Plugin",
-                version: 1,
-                url: url,
-                status: 1,
-                authors: [repoOwner],
-                description: `${pluginName} plugin for CloudStream`,
-                language: "en",
-                tvTypes: ["Movie", "TvSeries"]
-              });
-            } catch (e) {}
-          });
-
-          fs.writeFileSync("plugins.json", JSON.stringify(plugins, null, 2));
-          console.log("plugins.json →", plugins.length, "plugins");
-
-          const repoJson = {
-            name: repoOwner + " CloudStream Repo",
-            description: "Auto-generated CloudStream plugins",
-            manifestVersion: 1,
-            pluginLists: [
-              `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/plugins.json`
+          cat > $GITHUB_WORKSPACE/builds/repo.json << 'EOF'
+          {
+            "name": "qera18 CloudStream Repo",
+            "description": "Auto-generated CloudStream plugins",
+            "manifestVersion": 1,
+            "pluginLists": [
+              "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/plugins.json"
             ]
-          };
-          fs.writeFileSync("repo.json", JSON.stringify(repoJson, null, 2));
-          console.log("repo.json generated");
+          }
           EOF
 
-      - name: Commit and push artifacts
+      - name: Push builds
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add -A "*.cs3" "plugins.json" "repo.json" "gradle/wrapper/gradle-wrapper.jar" || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: build plugin artifacts and update manifests [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
-          fi
+          cd $GITHUB_WORKSPACE/builds
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
+          git commit -m "Build ${GITHUB_SHA}" || echo "Nothing to commit"
+          git push --force origin HEAD:builds
