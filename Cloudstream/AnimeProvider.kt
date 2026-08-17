@@ -4,93 +4,86 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 import org.jsoup.Jsoup
 
 class AnimeProvider : MainAPI() {
-    override var mainUrl = "https://animecix.tv"
+    override var mainUrl = "https://cizgimax.online"
     override var name = "Anime"
     override val hasMainPage = true
     override var lang = "tr"
-    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie, TvType.TvSeries)
-
-    private val apiUrl = "https://api.animecix.net"
 
     companion object {
-        fun getType(type: String?): TvType {
-            return when (type?.lowercase()) {
-                "movie", "film" -> TvType.AnimeMovie
-                "tv", "series" -> TvType.Anime
-                else -> TvType.Anime
-            }
-        }
+        val supportedTypes = setOf(
+            TvType.Anime,
+            TvType.Cartoon,
+            TvType.TvSeries,
+            TvType.Movie
+        )
     }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
-        val items = mutableListOf<HomePageList>()
-        val urls = listOf(
-            Pair("Son Eklenenler", "$apiUrl/home"),
-            Pair("Popüler", "$apiUrl/home"),
-            Pair("Yeni Bölümler", "$apiUrl/home")
+        val categories = listOf(
+            Pair("Çizgi Film", "$mainUrl/kategori/cizgi-film/page/$page/"),
+            Pair("Anime", "$mainUrl/kategori/anime/page/$page/"),
+            Pair("Diziler", "$mainUrl/kategori/diziler/page/$page/"),
+            Pair("Filmler", "$mainUrl/kategori/filmler/page/$page/")
         )
 
-        urls.forEach { (title, url) ->
-            val response = app.get(url).parsedSafe<HomeResponse>()
-            val animeList = response?.data?.new_animes?.map {
-                newAnimeSearchResponse(it.name ?: "", it.slug ?: "", TvType.Anime) {
-                    this.posterUrl = it.poster_url
-                }
+        val lists = categories.map { (name, url) ->
+            val document = app.get(url).document
+            val items = document.select(".video-item, .post-column").mapNotNull {
+                it.toSearchResult()
             }
-            if (!animeList.isNullOrEmpty()) {
-                items.add(HomePageList(title, animeList))
-            }
+            HomePageList(name, items)
         }
+        return HomePageResponse(lists)
+    }
 
-        return HomePageResponse(items)
+    private fun Element.toSearchResult(): SearchResponse? {
+        val title = this.selectFirst(".video-title, .entry-title")?.text() ?: return null
+        val href = this.selectFirst("a")?.attr("abs:href") ?: return null
+        val posterUrl = this.selectFirst("img")?.attr("abs:src")
+        
+        return newAnimeSearchResponse(title, href, TvType.Anime) {
+            this.posterUrl = posterUrl
+        }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val response = app.get("$apiUrl/search?q=$query").parsedSafe<SearchData>()
-        return response?.data?.map {
-            newAnimeSearchResponse(it.name ?: "", it.slug ?: "", getType(it.type)) {
-                this.posterUrl = it.poster_url
-            }
-        } ?: emptyList()
+        val url = "$mainUrl/?s=$query"
+        val document = app.get(url).document
+        return document.select(".video-item, .post-column").mapNotNull {
+            it.toSearchResult()
+        }
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val slug = url.split("/").last()
-        val details = app.get("$apiUrl/anime-detail/$slug").parsedSafe<AnimeDetail>() ?: return null
-        
-        val title = details.data?.name ?: ""
-        val poster = details.data?.poster_url
-        val description = details.data?.description
-        val type = getType(details.data?.type)
-        val year = details.data?.year?.toIntOrNull()
-        val status = when (details.data?.status) {
-            "1" -> ShowStatus.Ongoing
-            "2" -> ShowStatus.Completed
-            else -> null
+        val document = app.get(url).document
+        val title = document.selectFirst(".video-title, .entry-title")?.text() ?: return null
+        val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")
+        val description = document.selectFirst(".entry-content, .video-details, .post-content")?.text()
+
+        val episodes = document.select(".video-episodes a, .episode-list a").map {
+            Episode(
+                data = it.attr("abs:href"),
+                name = it.text().trim()
+            )
         }
 
-        val episodes = details.data?.episodes?.map { ep ->
-            val epNum = ep.number?.toIntOrNull() ?: 1
-            val epName = ep.name ?: "Bölüm $epNum"
-            Episode(
-                data = ep.id.toString(),
-                name = epName,
-                episode = epNum,
-                season = 1,
-                posterUrl = poster
-            )
-        }?.sortedBy { it.episode } ?: emptyList()
-
-        return newAnimeLoadResponse(title, url, type) {
-            this.posterUrl = poster
-            this.plot = description
-            this.year = year
-            this.showStatus = status
-            this.addEpisodes(TvType.Anime, episodes)
+        return if (episodes.isEmpty()) {
+            newMovieLoadResponse(title, url, TvType.Movie, url) {
+                this.posterUrl = poster
+                this.plot = description
+            }
+        } else {
+            newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+                this.posterUrl = poster
+                this.plot = description
+            }
         }
     }
 
@@ -100,55 +93,14 @@ class AnimeProvider : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val episodeId = data
-        val videoSources = app.get("$apiUrl/episode-videos/$episodeId").parsedSafe<VideoSources>()
-
-        videoSources?.data?.forEach { source ->
-            val videoUrl = source.url ?: return@forEach
-            val label = source.name ?: "Source"
-
-            if (videoUrl.contains("tau-player") || videoUrl.contains("anm.cx")) {
-                val directData = app.get(videoUrl).text
-                // Tau-player logic extraction would go here, often uses internal API or base64
-                loadExtractor(videoUrl, subtitleCallback, callback)
-            } else {
-                loadExtractor(videoUrl, subtitleCallback, callback)
-            }
+        val document = app.get(data).document
+        val iframes = document.select("iframe[src*='/player/'], iframe[src*='vidmoly.to'], iframe[src*='ok.ru'], iframe[src*='vk.com']")
+        
+        iframes.forEach { iframe ->
+            val src = iframe.attr("abs:src")
+            loadExtractor(src, subtitleCallback, callback)
         }
-
+        
         return true
     }
-
-    data class HomeResponse(val data: HomeData?)
-    data class HomeData(val new_animes: List<AnimeItem>?)
-    data class SearchData(val data: List<AnimeItem>?)
-    data class AnimeItem(
-        val name: String?,
-        val slug: String?,
-        val poster_url: String?,
-        val type: String?
-    )
-
-    data class AnimeDetail(val data: DetailData?)
-    data class DetailData(
-        val name: String?,
-        val description: String?,
-        val poster_url: String?,
-        val type: String?,
-        val year: String?,
-        val status: String?,
-        val episodes: List<EpisodeItem>?
-    )
-
-    data class EpisodeItem(
-        val id: Int?,
-        val name: String?,
-        val number: String?
-    )
-
-    data class VideoSources(val data: List<VideoSourceItem>?)
-    data class VideoSourceItem(
-        val name: String?,
-        val url: String?
-    )
 }
