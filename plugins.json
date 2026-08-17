@@ -1,26 +1,5 @@
 [
   {
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/AnimeProvider.kt",
-    "status": 1,
-    "version": 1,
-    "name": "Anime",
-    "internalName": "AnimeProvider",
-    "authors": [
-      "CloudStream Auto Builder"
-    ],
-    "description": "Auto-generated CloudStream3 plugin for Anime (https://animecix.tv/)",
-    "fileSize": 5191,
-    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-e20f5e505d4138dcead2e31dbde4af27025fc8373170521a19bf7cd93e8da425"
-  },
-  {
     "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/BelgeselProvider.kt",
     "status": 1,
     "version": 1,
@@ -40,5 +19,26 @@
     "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
     "apiVersion": 1,
     "fileHash": "sha256-e12bd18bb3ef42658b1467e52f8f421ec4f9d12bd7c848895c612b339b5aa428"
+  },
+  {
+    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/AnimeProvider.kt",
+    "status": 1,
+    "version": 1,
+    "name": "Anime",
+    "internalName": "AnimeProvider",
+    "authors": [
+      "CloudStream Auto Builder"
+    ],
+    "description": "Auto-generated CloudStream3 plugin for Anime (https://cizgimax.online/)",
+    "fileSize": 3831,
+    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
+    "language": "en",
+    "tvTypes": [
+      "Movie",
+      "TvSeries"
+    ],
+    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
+    "apiVersion": 1,
+    "fileHash": "sha256-6ef44c2e1f50317ec380169b6914e06ede7afbff153509e0e330ca0b2b837904"
   }
 ]
