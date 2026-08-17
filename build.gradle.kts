@@ -11,6 +11,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.5.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
+        classpath("com.github.recloudstream:gradle:-SNAPSHOT")
     }
 }
 
@@ -25,12 +26,13 @@ allprojects {
 subprojects {
     apply(plugin = "com.android.library")
     apply(plugin = "kotlin-android")
+    apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     extensions.configure<BaseExtension> {
         compileSdkVersion(34)
         defaultConfig {
-            minSdkVersion(21)
-            targetSdkVersion(34)
+            minSdk = 21
+            targetSdk = 34
         }
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_11
