@@ -10,28 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      
       - uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: false
-          gradle-home-cache-cleanup: true
-      
       - name: Build
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease --no-daemon -x test
-      
+          ./gradlew assembleRelease --no-daemon
       - name: Collect plugins
         run: |
           mkdir -p builds
           find . -path "*/build/outputs/apk/release/*.apk" -exec cp {} builds/ \;
           echo '{"plugins":[]}' > builds/plugins.json
-      
       - name: Publish to builds branch
         uses: peaceiris/actions-gh-pages@v4
         with:
