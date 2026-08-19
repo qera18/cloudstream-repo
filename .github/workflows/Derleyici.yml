@@ -31,8 +31,9 @@ jobs:
       - name: "'build' Depo Kontrolü"
         uses: actions/checkout@v4.2.2
         with:
-          ref: "builds"
           path: "builds"
+          ref: "builds"
+          continue-on-error: true
 
       - name: Eski Derlemeleri Temizle
         run: rm -f ${GITHUB_WORKSPACE}/builds/*.cs3 || true
@@ -50,9 +51,12 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}/src
           chmod +x gradlew
-          ./gradlew makeApkFromBundleForRelease makePluginsJson --stacktrace
-          cp */build/*.cs3 ${GITHUB_WORKSPACE}/builds || true
-          cp build/plugins.json ${GITHUB_WORKSPACE}/builds || true
+          ./gradlew make --no-daemon --stacktrace
+
+      - name: Derlenen Eklentileri Kopyala
+        run: |
+          # Derlenen .cs3 dosyalarını ve üretilen plugins.json manifestini builds klasörüne taşır
+          find ${GITHUB_WORKSPACE}/src -type f \( -name "*.cs3" -o -name "plugins.json" \) -exec cp {} ${GITHUB_WORKSPACE}/builds/ \;
 
       - name: Derlemeleri Yükle
         run: |
