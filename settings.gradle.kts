@@ -14,4 +14,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "cloudstream-repo"
-include(":Animecix")
+include(":AnimeCix")
