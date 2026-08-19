@@ -1,5 +1,29 @@
-// Top-level build file
-plugins {
-    id("com.android.application") version "8.5.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+import com.lagradost.cloudstream3.gradle.CloudstreamExtension
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.5.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("com.github.recloudstream:gradle:-SNAPSHOT")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
+
+fun Project.cloudstream(configuration: CloudstreamExtension.() -> Unit) =
+    extensions.getByName<CloudstreamExtension>("cloudstream").configuration()
+
+tasks.register("clean", Delete::class) {
+    delete(rootProject.layout.buildDirectory)
 }
