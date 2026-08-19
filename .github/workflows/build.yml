@@ -10,25 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-
       - uses: gradle/actions/setup-gradle@v3
-
-      - name: Build Plugins
+      - name: Build
         run: |
           chmod +x ./gradlew
-          ./gradlew make --no-daemon
-
+          ./gradlew assembleRelease --no-daemon
       - name: Collect plugins
         run: |
           mkdir -p builds
-          # Derlenen .cs3 eklenti dosyalarını ve otomatik oluşturulan plugins.json manifestini toplar
-          find . -maxdepth 3 -type f \( -name "*.cs3" -o -name "plugins.json" \) -exec cp {} builds/ \;
-
+          find . -path "*/build/outputs/apk/release/*.apk" -exec cp {} builds/ \;
+          echo '{"plugins":[]}' > builds/plugins.json
       - name: Publish to builds branch
         uses: peaceiris/actions-gh-pages@v4
         with:
