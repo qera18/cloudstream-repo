@@ -21,5 +21,5 @@ android {
 }
 
 dependencies {
-    compileOnly("com.lagradost:cloudstream3:1.0.0")
+    cloudstream("com.lagradost:cloudstream3:pre-release")
 }
