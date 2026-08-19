@@ -20,15 +20,14 @@ jobs:
 
       - name: Build Plugins
         run: |
-          cd src
           chmod +x ./gradlew
           ./gradlew make --no-daemon
 
       - name: Collect plugins
         run: |
           mkdir -p builds
-          # Cloudstream derlenen eklenti dosyalarını (.cs3) ve manifest dosyasını toplar
-          find src -type f \( -name "*.cs3" -o -name "plugins.json" \) -exec cp {} builds/ \;
+          # Derlenen .cs3 eklenti dosyalarını ve otomatik oluşturulan plugins.json manifestini toplar
+          find . -maxdepth 3 -type f \( -name "*.cs3" -o -name "plugins.json" \) -exec cp {} builds/ \;
 
       - name: Publish to builds branch
         uses: peaceiris/actions-gh-pages@v4
