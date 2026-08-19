@@ -2,26 +2,31 @@ name: Build Plugins
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x ./gradlew
-
-      - name: Build Plugins
-        run: ./gradlew make --no-daemon
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v3
+      - name: Build
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --no-daemon
+      - name: Collect plugins
+        run: |
+          mkdir -p builds
+          find . -path "*/build/outputs/apk/release/*.apk" -exec cp {} builds/ \;
+          echo '{"plugins":[]}' > builds/plugins.json
+      - name: Publish to builds branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: builds
+          publish_branch: builds
