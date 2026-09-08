@@ -42,13 +42,13 @@ jobs:
       - name: Validate Gradle project
         run: ./gradlew projects --no-daemon --stacktrace
 
-      - name: Build release plugin
-        run: ./gradlew :Animecix:assembleRelease --no-daemon --stacktrace
+      - name: Build CloudStream plugin
+        run: ./gradlew :Animecix:make --no-daemon --stacktrace
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: cloudstream-animecix-release
-          path: Animecix/build/outputs/apk/release/*.apk
+          path: Animecix/build/*.cs3
           if-no-files-found: error
           retention-days: 14
