@@ -1,9 +1,14 @@
-name: Build CloudStream Plugins
+name: Build Plugins
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
 
 concurrency:
   group: cloudstream-build
@@ -13,73 +18,64 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
-      - name: Setup Java 17
+      - name: Configure git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin builds || true
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
+      - name: Gradle permissions
         run: chmod +x gradlew
 
       - name: List projects
         run: ./gradlew projects --no-daemon
 
       - name: Build plugins
-        run: ./gradlew make --no-daemon
-
-      - name: Generate plugins.json
-        run: ./gradlew makePluginsJson --no-daemon
+        run: ./gradlew make makePluginsJson --no-daemon
 
       - name: Verify artifacts
         run: |
-          if ! find . -name "*.cs3" | grep -q .; then
-            echo "::error::cs3 dosyası bulunamadı"
-            exit 1
+          set -e
+          if ! ls build/plugins/*.cs3 1>/dev/null 2>&1; then
+            echo "HATA: .cs3 dosyasi bulunamadi"; exit 1
           fi
-          if [ ! -s build/plugins.json ]; then
-            echo "::error::plugins.json boş"
-            exit 1
+          if [ ! -s build/plugins/plugins.json ]; then
+            echo "HATA: plugins.json bos veya yok"; exit 1
           fi
-
-      - name: Generate repo.json
-        run: |
-          mkdir -p build
-          cat > build/repo.json <<'EOF'
-{
-  "name": "CloudStream Repository",
-  "description": "Automatically generated CloudStream plugins",
-  "manifestVersion": 1,
-  "pluginLists": [
-    "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/plugins.json"
-  ]
-}
-          EOF
-
-      - name: Deploy to builds branch
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git fetch origin
-          git checkout builds 2>/dev/null || git checkout -b builds origin/builds
-          git rm -rf . || true
-          find . -name "*.cs3" -exec cp {} . \;
-          cp build/plugins.json .
-          cp build/repo.json .
-          git add .
-          git commit -m "Deploy build artifacts" || exit 0
-          git push origin builds
+          if ! jq empty build/plugins/repo.json 2>/dev/null; then
+            echo "HATA: repo.json gecersiz"; exit 1
+          fi
 
       - name: Verify raw URLs
         run: |
-          sleep 5
-          curl -fL https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/repo.json || exit 1
-          curl -fL https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/plugins.json || exit 1
+          set -e
+          for f in repo.json plugins.json; do
+            curl -fsSL "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/$f" -o /tmp/$f
+            [ -s /tmp/$f ] || { echo "$f bos"; exit 1; }
+          done
+
+      - name: Commit to builds branch
+        run: |
+          git checkout builds || git checkout -b builds
+          rm -f *.cs3 plugins.json repo.json || true
+          cp -f build/plugins/*.cs3 . 2>/dev/null || true
+          cp -f build/plugins/plugins.json . 2>/dev/null || true
+          cp -f build/plugins/repo.json . 2>/dev/null || true
+          git add *.cs3 plugins.json repo.json 2>/dev/null || true
+          git commit -m "Publish built plugins" || echo "nothing to commit"
+          git push origin builds
