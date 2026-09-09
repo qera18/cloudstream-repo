@@ -1,25 +1,14 @@
-plugins {
-    id("com.android.application")
-    id("kotlin-android")
+version = 1
+
+cloudstream {
+    description = "FullHDFilmizlesene plugin for CloudStream"
+    authors = listOf("qera18")
+    status = 1
+    tvTypes = listOf("Movie", "TvSeries")
+    language = "tr"
+    requiresResources = false
 }
 
 android {
     namespace = "com.qera18.fullhdfilmizlesene"
-    compileSdk = 34
-
-    defaultConfig {
-        minSdk = 21
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-dependencies {
-    compileOnly("com.lagradost:cloudstream3:1.0.0")
 }
