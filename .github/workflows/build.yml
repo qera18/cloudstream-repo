@@ -86,6 +86,7 @@ jobs:
 
       - name: Commit to builds branch
         run: |
+          git reset --hard HEAD
           if git show-ref --verify --quiet refs/remotes/origin/builds; then
             git checkout -B builds refs/remotes/origin/builds
           else
