@@ -49,25 +49,36 @@ jobs:
         run: ./gradlew make makePluginsJson --no-daemon
 
       - name: Verify artifacts
+        id: artifacts
         run: |
-          set -e
-          if ! ls build/plugins/*.cs3 1>/dev/null 2>&1; then
+          set -euo pipefail
+          cs3=$(find . -type f -name '*.cs3' -size +0c | head -n 1)
+          if [ -z "$cs3" ]; then
             echo "HATA: .cs3 dosyasi bulunamadi"; exit 1
           fi
-          if [ ! -s build/plugins/plugins.json ]; then
+          plugins_json=$(find . -type f -name 'plugins.json' -size +0c | head -n 1)
+          repo_json=$(find . -type f -name 'repo.json' -size +0c | head -n 1)
+          if [ -z "$plugins_json" ]; then
             echo "HATA: plugins.json bos veya yok"; exit 1
           fi
-          if ! jq empty build/plugins/repo.json 2>/dev/null; then
+          if [ -z "$repo_json" ] || ! jq empty "$repo_json" 2>/dev/null; then
             echo "HATA: repo.json gecersiz"; exit 1
           fi
+          echo "cs3=$cs3" >> "$GITHUB_OUTPUT"
+          echo "plugins_json=$plugins_json" >> "$GITHUB_OUTPUT"
+          echo "repo_json=$repo_json" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/cloudstream-artifacts"
+          find . -type f -name '*.cs3' -size +0c -exec cp -f {} "$RUNNER_TEMP/cloudstream-artifacts/" \;
+          cp -f "$plugins_json" "$RUNNER_TEMP/cloudstream-artifacts/plugins.json"
+          cp -f "$repo_json" "$RUNNER_TEMP/cloudstream-artifacts/repo.json"
 
       - name: Commit to builds branch
         run: |
           git checkout builds || git checkout -b builds
           rm -f *.cs3 plugins.json repo.json || true
-          cp -f build/plugins/*.cs3 . 2>/dev/null || true
-          cp -f build/plugins/plugins.json . 2>/dev/null || true
-          cp -f build/plugins/repo.json . 2>/dev/null || true
+          cp -f "$RUNNER_TEMP/cloudstream-artifacts/"*.cs3 .
+          cp -f "$RUNNER_TEMP/cloudstream-artifacts/plugins.json" plugins.json
+          cp -f "$RUNNER_TEMP/cloudstream-artifacts/repo.json" repo.json
           git add *.cs3 plugins.json repo.json 2>/dev/null || true
           git commit -m "Publish built plugins" || echo "nothing to commit"
           git push origin builds
