@@ -24,7 +24,7 @@ class BelgeselxProvider : MainAPI() {
         val items = doc.select("a")
         val results = items.mapNotNull { it.toSearchResponse() }
         home.add(HomePageList("Onerilen", results))
-        return HomePageResponse(home)
+        return newHomePageResponse(home, hasNext = false)
     }
 
     private fun Element.toSearchResponse(): SearchResponse? {
@@ -47,10 +47,10 @@ class BelgeselxProvider : MainAPI() {
         val doc = app.get(url).document
         val title = doc.select("h1.title").text().ifBlank { "Bilinmeyen" }
         val description = doc.select(".description").text()
-        val poster = doc.select("img").attr("src").ifBlank { attr("data-src") }
+        val poster = doc.select("img").attr("src").ifBlank { doc.select("img").attr("data-src") }
         val year = doc.select(".year").text().filter { it.isDigit() }.toIntOrNull()
         val genres = doc.select(".genre").eachText()
-        val embed = doc.select("iframe").attr("src").ifBlank { attr("data-src") }
+        val embed = doc.select("iframe").attr("src").ifBlank { doc.select("iframe").attr("data-src") }
         return newMovieLoadResponse(title, url, TvType.Movie, embed) {
             this.posterUrl = fixUrlNull(poster)
             this.year = year
