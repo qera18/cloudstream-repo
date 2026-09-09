@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>CloudStream Plugin Build</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117; color: #e1e4e8; min-height: 100vh; padding: 24px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 32px; }
+  header h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  header p { color: #8b949e; font-size: 0.95rem; }
+  .status-badge {
+    display: inline-block; padding: 8px 20px; border-radius: 999px;
+    font-weight: 600; font-size: 0.9rem; margin: 16px 0;
+  }
+  .status-badge.building { background: #1f3a5f; color: #79c0ff; }
+  .status-badge.success { background: #1a3a1a; color: #56d364; }
+  .status-badge.failed { background: #3a1a1a; color: #f85149; }
+  .building .status-badge.building::before { content: "⏳ "; }
+  .success .status-badge.success::before { content: "✅ "; }
+  .failed .status-badge.failed::before { content: "❌ "; }
+  .error-banner {
+    background: #3a1a1a; border: 1px solid #f8514940; color: #f85149;
+    padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+  .plugins { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .card {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 16px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #586069; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .plugin-name { font-weight: 600; font-size: 1rem; }
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 600;
+    background: #1f2937; color: #9ca3af;
+  }
+  .badge-sm { background: #1f2a1f; color: #56d364; }
+  .card-body { display: flex; justify-content: space-between; align-items: center; }
+  .meta { color: #8b949e; font-size: 0.85rem; }
+  .card-body a {
+    color: #58a6ff; text-decoration: none; font-size: 0.85rem;
+    padding: 4px 12px; border: 1px solid #30363d; border-radius: 6px;
+  }
+  .card-body a:hover { background: #1f2937; }
+  .empty { color: #8b949e; text-align: center; padding: 24px; }
+  .log-section { margin-top: 24px; }
+  .log-section h2 { font-size: 1rem; margin-bottom: 8px; color: #8b949e; }
+  .log {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+    padding: 16px; font-size: 0.8rem; font-family: 'SF Mono', Consolas, monospace;
+    overflow-x: auto; max-height: 400px; overflow-y: auto; white-space: pre-wrap;
+    color: #c9d1d9;
+  }
+  footer { text-align: center; margin-top: 32px; color: #484f58; font-size: 0.8rem; }
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid #30363d; border-top-color: #79c0ff;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="success">
+<div class="container">
+  <header>
+    <h1>CloudStream Plugin Repository</h1>
+    <p>Belgesel Repo — CloudStream3 plugin build</p>
+    <div class="status-badge success">
+      Build Successful
+    </div>
+  </header>
+
+  
+
+  <div class="plugins">
+    
+            <div class="card">
+                <div class="card-header">
+                    <span class="plugin-name">Animecix.cs3</span>
+                    <span class="badge badge-sm">Animecix</span>
+                </div>
+                <div class="card-body">
+                    <span class="meta">9.5 KB</span>
+                    <a href="/Animecix.cs3" download>Download .cs3</a>
+                </div>
+            </div>
+  </div>
+
+  
+        <div class="log-section">
+            <h2>Build Log (last 40 lines)</h2>
+            <pre class="log">	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+Compiled dex to /app/Animecix/build/intermediates/classes.dex
+
+&gt; Task :Animecix:generateManifest
+&#x27;unspecified&#x27; is not a valid version in Animecix. Use an integer.
+
+&gt; Task :Animecix:make
+Made CloudStream package at /app/Animecix/build/Animecix.cs3
+[Incubating] Problems report is available at: file:///app/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 7s
+9 actionable tasks: 9 executed</pre>
+        </div>
+
+  <footer>
+    <p>Generated 2026-09-09 00:31 UTC · <a href="/plugins.json" style="color:#58a6ff">plugins.json</a></p>
+  </footer>
+</div>
+</body>
+</html>

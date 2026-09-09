@@ -1,0 +1,25 @@
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.base44
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - gradle-cache:/gradle-cache
+    environment:
+      - ANDROID_HOME=/opt/android-sdk
+      - ANDROID_SDK_ROOT=/opt/android-sdk
+      - GRADLE_USER_HOME=/gradle-cache
+      - GITHUB_REPOSITORY=qera18/cloudstream-repo
+    command: ["python3", "/app/scripts/serve.py"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  gradle-cache:
