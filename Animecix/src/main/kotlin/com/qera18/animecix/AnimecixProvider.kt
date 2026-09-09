@@ -2,8 +2,6 @@ package com.qera18.animecix
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.utils.AppUtils.toJson
-import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import org.jsoup.nodes.Element
 
@@ -75,8 +73,8 @@ class AnimecixProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).document
-        document.select("div.server-item a").apmap { server ->
-            val embedUrl = fixUrlNull(server.attr("data-embed")) ?: return@apmap
+        for (server in document.select("div.server-item a")) {
+            val embedUrl = fixUrlNull(server.attr("data-embed")) ?: continue
             loadExtractor(embedUrl, data, subtitleCallback, callback)
         }
         return true
