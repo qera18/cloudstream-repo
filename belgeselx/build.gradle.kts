@@ -5,30 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "com.qera18.belgeselx"
+    namespace = "com.cloudstream.belgeselx"
     compileSdk = 34
-
     defaultConfig {
         minSdk = 21
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-}
-
-cloudstream {
-    defaultConfig {
-        id = 1
-        name = "belgeselx"
-        version = 1
-        language = "tr"
-        authors = listOf("qera18")
-        tvTypes = listOf("Movie")
     }
 }
 
