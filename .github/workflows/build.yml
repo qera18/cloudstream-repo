@@ -28,7 +28,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git fetch origin builds || true
+          git fetch origin builds:refs/remotes/origin/builds || true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -74,12 +74,16 @@ jobs:
 
       - name: Commit to builds branch
         run: |
-          git checkout builds || git checkout -b builds
+          if git show-ref --verify --quiet refs/remotes/origin/builds; then
+            git checkout -B builds refs/remotes/origin/builds
+          else
+            git checkout -B builds main
+          fi
           rm -f *.cs3 plugins.json repo.json || true
           cp -f "$RUNNER_TEMP/cloudstream-artifacts/"*.cs3 .
           cp -f "$RUNNER_TEMP/cloudstream-artifacts/plugins.json" plugins.json
           cp -f "$RUNNER_TEMP/cloudstream-artifacts/repo.json" repo.json
-          git add *.cs3 plugins.json repo.json 2>/dev/null || true
+          git add -f *.cs3 plugins.json repo.json
           git commit -m "Publish built plugins" || echo "nothing to commit"
           git push origin builds
 
