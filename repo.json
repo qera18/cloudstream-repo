@@ -1,6 +1,6 @@
 {
-  "name": "Belgesel Repo",
-  "description": "CloudStream3 plugin repository — Belgesel",
+  "name": "cloudstream-repo",
+  "description": "Anime izleme siteleri için CloudStream eklentileri",
   "manifestVersion": 1,
   "pluginLists": [
     "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/plugins.json"
