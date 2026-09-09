@@ -61,14 +61,6 @@ jobs:
             echo "HATA: repo.json gecersiz"; exit 1
           fi
 
-      - name: Verify raw URLs
-        run: |
-          set -e
-          for f in repo.json plugins.json; do
-            curl -fsSL "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/$f" -o /tmp/$f
-            [ -s /tmp/$f ] || { echo "$f bos"; exit 1; }
-          done
-
       - name: Commit to builds branch
         run: |
           git checkout builds || git checkout -b builds
@@ -79,3 +71,18 @@ jobs:
           git add *.cs3 plugins.json repo.json 2>/dev/null || true
           git commit -m "Publish built plugins" || echo "nothing to commit"
           git push origin builds
+
+      - name: Verify published raw URLs
+        run: |
+          set -euo pipefail
+          for f in repo.json plugins.json; do
+            url="https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/$f"
+            curl --fail --location --retry 3 --retry-delay 2 "$url" -o "/tmp/$f"
+            test -s "/tmp/$f"
+          done
+          jq -e '.pluginLists | type == "array" and length > 0' /tmp/repo.json
+          jq -e 'type == "array" and length > 0' /tmp/plugins.json
+          while read -r url; do
+            curl --fail --location --retry 3 --retry-delay 2 "$url" -o /tmp/plugin.cs3
+            test -s /tmp/plugin.cs3
+          done < <(jq -r '.[].url' /tmp/plugins.json)
