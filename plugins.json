@@ -1,39 +1,49 @@
-[
-  {
-    "name": "AnimeCix",
-    "internalName": "animecix",
-    "version": 3,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/animecix.cs3",
-    "status": 1,
-    "language": "en"
-  },
-  {
-    "name": "Animecix",
-    "internalName": "animecix",
-    "version": 2,
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/animecix/animecix.cs3",
-    "status": 1,
-    "language": "en"
-  },
-  {
-    "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/Cloudstream/BelgeselProvider.kt",
-    "status": 1,
-    "version": 1,
-    "name": "Belgesel",
-    "internalName": "BelgeselProvider",
-    "authors": [
-      "CloudStream Auto Builder"
-    ],
-    "description": "Auto-generated CloudStream3 plugin for Belgesel (https://belgeselx.com/)",
-    "fileSize": 157,
-    "repositoryUrl": "https://github.com/qera18/cloudstream-repo",
-    "language": "en",
-    "tvTypes": [
-      "Movie",
-      "TvSeries"
-    ],
-    "iconUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/icon.png",
-    "apiVersion": 1,
-    "fileHash": "sha256-65ea32bd4ca6d9865f4a60c9bee635ca9659d9d166c2e3c185021f5494d8f280"
-  }
-]
+{
+  "name": "cloudstream-repo",
+  "manifestVersion": 1,
+  "plugins": [
+    {
+      "internalName": "BelgeselXProvider",
+      "name": "BelgeselX",
+      "language": "tr",
+      "authors": [
+        "Qera"
+      ],
+      "versionCode": 1,
+      "version": 100,
+      "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/BelgeselXProvider.cs3",
+      "pluginUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/BelgeselXProvider.cs3",
+      "requiresResources": false,
+      "types": [
+        "Movie",
+        "Asian"
+      ],
+      "apiVersion": 1,
+      "status": 1,
+      "iconUrl": "https://belgeselx.com/img/favicon.ico",
+      "description": "BelgeselX"
+    },
+    {
+      "internalName": "DiziyoProvider",
+      "name": "Diziyo",
+      "language": "tr",
+      "authors": [
+        "Qera"
+      ],
+      "versionCode": 1,
+      "version": 100,
+      "url": "https://raw.githubusercontent.com/OWNER/REPO/main/builds/DiziyoProvider.cs3",
+      "pluginUrl": "https://raw.githubusercontent.com/OWNER/REPO/main/builds/DiziyoProvider.cs3",
+      "requiresResources": false,
+      "types": [
+        "Anime",
+        "Movie",
+        "Asian"
+      ],
+      "apiVersion": 1,
+      "status": 1,
+      "iconUrl": "https://www.diziyo.so/favicon.ico",
+      "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele."
+    }
+  ]
+}
