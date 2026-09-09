@@ -108,8 +108,9 @@ jobs:
             test -s "/tmp/$f"
           done
           jq -e '.pluginLists | type == "array" and length > 0' /tmp/repo.json
-          jq -e 'type == "array" and length > 0' /tmp/plugins.json
+          jq -e 'if type == "array" then length > 0 else (type == "object" and (.plugins | type == "array" and length > 0)) end' /tmp/plugins.json
+          plugin_urls=$(jq -r 'if type == "array" then .[] else .plugins[] end | .url' /tmp/plugins.json)
           while read -r url; do
             curl --fail --location --retry 3 --retry-delay 2 "$url" -o /tmp/plugin.cs3
             test -s /tmp/plugin.cs3
-          done < <(jq -r '.[].url' /tmp/plugins.json)
+          done <<< "$plugin_urls"
