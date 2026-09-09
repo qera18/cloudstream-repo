@@ -11,8 +11,8 @@
       ],
       "versionCode": 1,
       "version": 100,
-      "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/BelgeselXProvider.cs3",
-      "pluginUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/main/builds/BelgeselXProvider.cs3",
+      "url": "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/BelgeselXProvider.cs3",
+      "pluginUrl": "https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/BelgeselXProvider.cs3",
       "requiresResources": false,
       "types": [
         "Movie",
@@ -22,28 +22,6 @@
       "status": 1,
       "iconUrl": "https://belgeselx.com/img/favicon.ico",
       "description": "BelgeselX"
-    },
-    {
-      "internalName": "DiziyoProvider",
-      "name": "Diziyo",
-      "language": "tr",
-      "authors": [
-        "Qera"
-      ],
-      "versionCode": 1,
-      "version": 100,
-      "url": "https://raw.githubusercontent.com/OWNER/REPO/main/builds/DiziyoProvider.cs3",
-      "pluginUrl": "https://raw.githubusercontent.com/OWNER/REPO/main/builds/DiziyoProvider.cs3",
-      "requiresResources": false,
-      "types": [
-        "Anime",
-        "Movie",
-        "Asian"
-      ],
-      "apiVersion": 1,
-      "status": 1,
-      "iconUrl": "https://www.diziyo.so/favicon.ico",
-      "description": "Yeni film, dizi, anime ve bölümleri keşfet; güncel trendleri, sıralamaları ve yayın takvimini incele."
     }
   ]
 }
