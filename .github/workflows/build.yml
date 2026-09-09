@@ -61,9 +61,21 @@ jobs:
           if [ -z "$plugins_json" ]; then
             echo "HATA: plugins.json bos veya yok"; exit 1
           fi
+          names=$(find . -type f -name '*.cs3' -size +0c -printf '%f\n' | sed 's/\.cs3$//' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          jq --argjson names "$names" '
+            if (type == "object" and (.plugins | type) == "array") then
+              .plugins |= map(
+                select((.url | split("/")[-1] | sub("\\.cs3$"; "")) as $n | ($names | index($n)) != null)
+                | .url = ("https://raw.githubusercontent.com/qera18/cloudstream-repo/builds/" + (.url | split("/")[-1]))
+                | .pluginUrl = .url
+              )
+            else . end
+          ' "$plugins_json" > "$plugins_json.tmp"
+          mv "$plugins_json.tmp" "$plugins_json"
           if [ -z "$repo_json" ] || ! jq empty "$repo_json" 2>/dev/null; then
             echo "HATA: repo.json gecersiz"; exit 1
           fi
+          jq -e 'type == "object" and (.plugins | type == "array" and length > 0)' "$plugins_json"
           echo "cs3=$cs3" >> "$GITHUB_OUTPUT"
           echo "plugins_json=$plugins_json" >> "$GITHUB_OUTPUT"
           echo "repo_json=$repo_json" >> "$GITHUB_OUTPUT"
